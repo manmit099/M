@@ -1,0 +1,425 @@
+
+      <html><head><meta charset="UTF-8"><title>Flashcard review 2026-03-11</title>
+      <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+      <style>
+    /* ----- RESET & VARIABLES ----- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #0d0f14;
+      font-family: 'Sora', sans-serif;
+      color: #e2e8f0;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* background radial gradients (ambiance) */
+    body::before {
+      content: '';
+      position: fixed;
+      width: 70vmax;
+      height: 70vmax;
+      background: radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 60%);
+      top: -20vmin;
+      left: -20vmin;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      width: 70vmax;
+      height: 70vmax;
+      background: radial-gradient(circle at 80% 80%, rgba(245, 200, 66, 0.08) 0%, transparent 60%);
+      bottom: -20vmin;
+      right: -20vmin;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* main container */
+    .app {
+      width: 100%;
+      max-width: min(720px, 100%);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+
+    /* ----- TYPOGRAPHY & UTILS ----- */
+    .badge, .meta, code, pre, .code-block {
+      font-family: 'Space Mono', monospace;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    /* ----- HEADER ----- */
+    .header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .header-badge {
+      background: #1e2d45;
+      color: #3b82f6;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      width: fit-content;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid #2a3a55;
+      margin-bottom: 0.25rem;
+    }
+    .subtitle {
+      color: #64748b;
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      font-weight: 400;
+    }
+
+    /* ----- PROGRESS BAR ----- */
+    .progress-area {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+    .progress-track {
+      background: #1e2d45;
+      height: 8px;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #3b82f6, #34d399);
+      border-radius: 20px;
+      transition: width 0.3s ease;
+    }
+
+    /* ----- FLASHCARD (3D FLIP) ----- */
+    .card-wrapper {
+      perspective: 1500px;
+      width: 100%;
+      min-height: 280px;
+      margin: 0.5rem 0;
+    }
+    .card-flipper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      transform-style: preserve-3d;
+      border-radius: 32px;
+    }
+    .card-flipper.flipped {
+      transform: rotateY(180deg);
+    }
+    .card-face {
+      position: relative;
+      width: 100%;
+      min-height: 280px;
+      padding: 2rem 1.8rem;
+      border-radius: 32px;
+      background: #161b26;
+      border: 1px solid #1e2d45;
+      box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.6);
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .card-face.front {
+      background: #161b26;
+      transform: rotateY(0deg);
+    }
+    .card-face.back {
+      background: #0f1a2e;
+      transform: rotateY(180deg);
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    /* shimmer line (animated) */
+    .card-face::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, #3b82f6, #90caf9, transparent);
+      background-size: 200% 100%;
+      animation: shimmer 2.5s infinite linear;
+      border-radius: 32px 32px 0 0;
+      opacity: 0.7;
+    }
+    .card-face.back::before {
+      background: linear-gradient(90deg, transparent, #f5c842, #fcd34d, transparent);
+      background-size: 200% 100%;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* category badge */
+    .cat-badge {
+      display: inline-block;
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      width: fit-content;
+      border: 1px solid transparent;
+      background: #1e2d45;
+      color: #cbd5e1;
+    }
+    .cat-badge.concept { background: #1e3a5f; color: #90caf9; border-color: #3b82f6; }
+    .cat-badge.syntax { background: #2d3a4f; color: #bae6fd; border-color: #38bdf8; }
+    .cat-badge.code { background: #1e3f3a; color: #34d399; border-color: #10b981; }
+    .cat-badge.tip { background: #4a3d20; color: #f5c842; border-color: #eab308; }
+    .cat-badge.warning { background: #4b2d35; color: #f87171; border-color: #ef4444; }
+
+    .question-text {
+      font-size: 1.4rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+    .back-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .code-block {
+      background: #0a0e14;
+      padding: 1rem;
+      border-radius: 18px;
+      border-left: 4px solid #3b82f6;
+      font-family: 'Space Mono', monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .output-line {
+      background: #1e2d45;
+      padding: 0.6rem 1rem;
+      border-radius: 12px;
+      color: #a5f3fc;
+      font-family: 'Space Mono', monospace;
+      border: 1px dashed #3b82f6;
+    }
+
+    /* ----- BUTTONS ----- */
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      justify-content: center;
+      margin: 0.5rem 0;
+    }
+    .btn {
+      background: #1e2d45;
+      border: 1px solid #2d405c;
+      color: #e2e8f0;
+      padding: 0.7rem 1.2rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: 48px;
+    }
+    .btn:hover {
+      background: #2d405c;
+      transform: scale(1.02);
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+    .btn.primary {
+      background: #3b82f6;
+      border-color: #2563eb;
+    }
+    .rating-hard { border-color: #f87171; color: #fecaca; }
+    .rating-ok { border-color: #f5c842; color: #fde68a; }
+    .rating-easy { border-color: #34d399; color: #a7f3d0; }
+
+    /* PAGE DOTS */
+    .dots-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.7rem;
+      margin: 0.75rem 0 0.25rem;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #2d405c;
+      transition: background 0.2s;
+      border: 1px solid #1e2d45;
+    }
+    .dot.active {
+      background: #3b82f6;
+      box-shadow: 0 0 8px #3b82f6;
+    }
+    .dot.rated {
+      background: #34d399;
+    }
+
+    /* COMPLETION & REVIEW SCREENS */
+    .completion-screen, .review-page {
+      background: #13161e;
+      border: 1px solid #1e2d45;
+      border-radius: 40px;
+      padding: 2rem 1.5rem;
+      width: 100%;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .review-card {
+      background: #161b26;
+      border-radius: 24px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-left: 6px solid;
+      page-break-inside: avoid;
+    }
+    .review-card.hard { border-color: #f87171; }
+    .review-card.ok { border-color: #f5c842; }
+    .review-card.easy { border-color: #34d399; }
+    .summary-badge {
+      font-size: 0.9rem;
+      background: #1e2d45;
+      padding: 0.3rem 0.8rem;
+      border-radius: 30px;
+    }
+
+    /* FOOTER */
+    .footer {
+      margin-top: 2rem;
+      color: #4b5b78;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    /* PRINT STYLES */
+    @media print {
+      body, .app, .header, .progress-area, .card-wrapper, .button-row,
+      .dots-container, .footer, .completion-screen .btn, .review-page .btn:not(.btn-primary) {
+        display: none !important;
+      }
+      .review-page, .review-page * {
+        display: block !important;
+        visibility: visible !important;
+        background: white !important;
+        color: black !important;
+        border-color: #ccc !important;
+        page-break-inside: avoid;
+      }
+      .review-page {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 1rem;
+      }
+      .review-card {
+        background: #f8f9fa !important;
+        border: 1px solid #ddd !important;
+      }
+      .btn {
+        display: none !important;
+      }
+    }
+
+    /* responsive */
+    @media (max-width: 500px) {
+      .button-row {
+        gap: 0.5rem;
+      }
+      .btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+      }
+      .card-face {
+        padding: 1.5rem;
+      }
+    }
+   body { background: #f5f7fa; padding: 2rem; color:#000; } .review-page { display:block; background:white; } .btn { display:none; } </style></head>
+      <body><div id="reviewPage" class="review-page">
+    <h2 style="margin-bottom:1.5rem">📊 rating summary</h2>
+    <div id="summaryCounts" style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:2rem;">
+        <span class="summary-badge" style="background:#4b2d35;">🔴 Hard 0</span>
+        <span class="summary-badge" style="background:#4a3d20;">🟡 Almost 2</span>
+        <span class="summary-badge" style="background:#1e3f3a;">🟢 Easy 3</span>
+      </div>
+    <div id="reviewGroupContainer"><h3 style="margin: 1rem 0 0.5rem; color:#f5c842;">🟡 Almost</h3>
+        <div class="review-card ok">
+          <span class="cat-badge tip" style="margin-bottom:0.5rem;">Tip</span>
+          <p><strong>Q:</strong> What are arithmetic operators?</p>
+          <p><strong>A:</strong> +  -  *  /  //  %  **</p>
+        </div>
+      
+        <div class="review-card ok">
+          <span class="cat-badge code" style="margin-bottom:0.5rem;">Code</span>
+          <p><strong>Q:</strong> Write a single-line comment in Python</p>
+          <p><strong>A:</strong> </p><pre style="background:#1e2d45; padding:0.5rem; border-radius:8px;"># This is a comment</pre><div><small>output: (no output, just ignored)</small></div><p></p>
+        </div>
+      <h3 style="margin: 1rem 0 0.5rem; color:#34d399;">🟢 Easy</h3>
+        <div class="review-card easy">
+          <span class="cat-badge concept" style="margin-bottom:0.5rem;">Concept</span>
+          <p><strong>Q:</strong> What is print() used for?</p>
+          <p><strong>A:</strong> print() outputs text or variables to the console. It adds a newline by default.</p>
+        </div>
+      
+        <div class="review-card easy">
+          <span class="cat-badge syntax" style="margin-bottom:0.5rem;">Syntax</span>
+          <p><strong>Q:</strong> How do you print "Hello World" with a newline?</p>
+          <p><strong>A:</strong> </p><pre style="background:#1e2d45; padding:0.5rem; border-radius:8px;">print("Hello World")</pre><div><small>output: Hello World</small></div><p></p>
+        </div>
+      
+        <div class="review-card easy">
+          <span class="cat-badge warning" style="margin-bottom:0.5rem;">Warning</span>
+          <p><strong>Q:</strong> What happens if you add int and str?</p>
+          <p><strong>A:</strong> TypeError: unsupported operand type(s) for +</p>
+        </div>
+      </div>
+    <div class="button-row">
+      <button class="btn" id="saveHtmlBtn">💾 Save as HTML</button>
+      <button class="btn" id="printReviewBtn">🖨️ Print / PDF</button>
+      <button class="btn" id="backFromReviewBtn">← Back</button>
+    </div>
+  </div></body></html>
